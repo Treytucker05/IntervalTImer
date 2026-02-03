@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Timer</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      padding: 20px;
+    }
+    .timer-display {
+      font-size: 5rem;
+      font-weight: 200;
+      letter-spacing: 2px;
+      margin-bottom: 40px;
+      font-variant-numeric: tabular-nums;
+    }
+    .inputs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+    .inputs input {
+      width: 70px;
+      padding: 12px;
+      font-size: 1.2rem;
+      text-align: center;
+      border: none;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .inputs input::placeholder { color: rgba(255,255,255,0.5); }
+    .inputs span {
+      align-self: center;
+      font-size: 0.8rem;
+      opacity: 0.7;
+    }
+    .buttons {
+      display: flex;
+      gap: 15px;
+    }
+    button {
+      padding: 15px 35px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    button:active { transform: scale(0.95); }
+    .start { background: #4ade80; color: #000; }
+    .pause { background: #fbbf24; color: #000; }
+    .reset { background: rgba(255,255,255,0.2); color: white; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="timer-display" id="display">00:00</div>
+  <div class="inputs" id="inputs">
+    <input type="number" id="mins" placeholder="00" min="0" max="99">
+    <span>min</span>
+    <input type="number" id="secs" placeholder="00" min="0" max="59">
+    <span>sec</span>
+  </div>
+  <div class="buttons">
+    <button class="start" id="startBtn">Start</button>
+    <button class="pause hidden" id="pauseBtn">Pause</button>
+    <button class="reset" id="resetBtn">Reset</button>
+  </div>
+
+  <script>
+    let totalSeconds = 0;
+    let remainingSeconds = 0;
+    let interval = null;
+    let running = false;
+
+    const display = document.getElementById('display');
+    const minsInput = document.getElementById('mins');
+    const secsInput = document.getElementById('secs');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const inputs = document.getElementById('inputs');
+
+    function formatTime(secs) {
+      const m = Math.floor(secs / 60);
+      const s = secs % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      display.textContent = formatTime(remainingSeconds);
+    }
+
+    function tick() {
+      if (remainingSeconds > 0) {
+        remainingSeconds--;
+        updateDisplay();
+      } else {
+        clearInterval(interval);
+        running = false;
+        display.style.color = '#f87171';
+        if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+        alert('Timer done!');
+        reset();
+      }
+    }
+
+    function start() {
+      if (!running) {
+        if (remainingSeconds === 0) {
+          const m = parseInt(minsInput.value) || 0;
+          const s = parseInt(secsInput.value) || 0;
+          totalSeconds = m * 60 + s;
+          remainingSeconds = totalSeconds;
+        }
+        if (remainingSeconds > 0) {
+          running = true;
+          inputs.classList.add('hidden');
+          startBtn.classList.add('hidden');
+          pauseBtn.classList.remove('hidden');
+          display.style.color = 'white';
+          interval = setInterval(tick, 1000);
+        }
+      }
+    }
+
+    function pause() {
+      clearInterval(interval);
+      running = false;
+      startBtn.classList.remove('hidden');
+      pauseBtn.classList.add('hidden');
+    }
+
+    function reset() {
+      clearInterval(interval);
+      running = false;
+      remainingSeconds = 0;
+      display.textContent = '00:00';
+      display.style.color = 'white';
+      inputs.classList.remove('hidden');
+      startBtn.classList.remove('hidden');
+      pauseBtn.classList.add('hidden');
+      minsInput.value = '';
+      secsInput.value = '';
+    }
+
+    startBtn.addEventListener('click', start);
+    pauseBtn.addEventListener('click', pause);
+    resetBtn.addEventListener('click', reset);
+  </script>
+</body>
+</html>
